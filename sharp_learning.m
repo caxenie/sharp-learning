@@ -5,40 +5,41 @@ clear all; clc; close all;
 
 %% INIT NETWORK
 % enables dynamic visualization on network runtime
-DYN_VISUAL = 0;
+DYN_VISUAL = 1;
 % number of populations in the network
 N_POP = 2;
 % number of neurons in each population
 N_NEURONS = 100;
 % max range value @ init for weights and activities in the population
-MAX_INIT_RANGE = 0;
+MAX_INIT_RANGE = 0.5 ;
 % WTA circuit settling threshold
 EPSILON = 1e-12;
 
 % constants in network dynamics
 
 % constants for WTA circuit
-GAMMA = 0.5; % scaling factor of weight update dynamics
-DELTA = 0.1; % decay term of weight update dyanamics
-SIGMA = 0.5; % standard deviation in the exponential update rule
+GAMMA = 1; % scaling factor of weight update dynamics
+DELTA = 0.3; % decay term of weight update dyanamics
+SIGMA = 0.85; % standard deviation in the exponential update rule
 
 % constants for Hebbian linkage
-ALPHA_L = 0.3; % regulates the speed of connection learning
-ALPHA_D = 0.7; % weight decay factor ALPHA_D > ALPHA_L
+ALPHA_L = 0.1; % regulates the speed of connection learning
+ALPHA_D = 0.5; % weight decay factor ALPHA_D > ALPHA_L
 
 % constants for HAR
-C = 0.3; % scaling factor in homeostatic activity regulation
-A_TARGET = 1; % target activity for HAR
+C = 1; % scaling factor in homeostatic activity regulation
+A_TARGET = 0.8; % target activity for HAR
 OMEGA = 0.5;  % inverse time constant of averaging
 
 % constants for neural units in populations
-M = 0.4; % slope in logistic function @ neuron level
-S = 0.6; % bias in logistic function @ neuron level
+M = 1/(N_NEURONS/2); % slope in logistic function @ neuron level
+S = 0; % shift in logistic function @ neuron level
 
 %% INIT INPUT DATA
 sensory_data = sensory_data_setup('robot_data_jras_paper', 'tracker_data_jras_paper');
 % size of the input dataset
 MAX_EPOCHS = length(sensory_data.timeunits);
+STEP_SIZE = 10;
 % epoch iterator (iterator through the input dataset)
 t = 1;
 % network iterator (iterator for a given input value)
@@ -66,7 +67,14 @@ old_avg = zeros(N_POP, N_NEURONS);
 cur_avg = zeros(N_POP, N_NEURONS);
 
 %% NETWORK SIMULATION LOOP
-for t = 1:10
+for t = 1:STEP_SIZE:MAX_EPOCHS
+    
+    % changes in activity
+    delta_a = zeros(N_POP, N_NEURONS);
+    old_delta_a = zeros(N_POP, N_NEURONS);
+    % running average of population activities
+    old_avg = zeros(N_POP, N_NEURONS);
+    cur_avg = zeros(N_POP, N_NEURONS);
     
     % reinit activity randomly
     populations(1).a = rand(N_NEURONS, 1)*MAX_INIT_RANGE; % receives ext in
@@ -93,23 +101,27 @@ for t = 1:10
         
         % weights - internal (within population)
         subplot(3,2,3);
-        vis_data1 = populations(1).Wint(1:N_NEURONS, 1:N_NEURONS)';
-        acth4 = pcolor(vis_data1); %colorbar;
-        box off; grid off; axis xy; xlabel('layer 1 - neuron index'); ylabel('layer 2 - neuron index');
+        vis_data1 = populations(1).Wint;
+        acth4 = pcolor(vis_data1); 
+        box off; grid off; axis xy; 
+        xlabel('layer 1 - neuron index'); ylabel('layer 1 - neuron index');
         subplot(3,2,4);
-        vis_data2 = populations(2).Wint(1:N_NEURONS, 1:N_NEURONS)';
-        acth5 = pcolor(vis_data2); %colorbar;
-        box off; grid off; axis xy; xlabel('layer 2 - neuron index'); ylabel('layer 1 - neuron index');
+        vis_data2 = populations(2).Wint;
+        acth5 = pcolor(vis_data2);
+        box off; grid off; axis xy; 
+        xlabel('layer 2 - neuron index'); ylabel('layer 2 - neuron index');
         
         % weights - between (between population)
         subplot(3,2,5);
-        vis_data3 = populations(1).Wext(1:N_NEURONS, 1:N_NEURONS)';
-        acth6 = pcolor(vis_data1); %colorbar;
-        box off; grid off; axis xy; xlabel('layer 1 - neuron index'); ylabel('layer 1 - neuron index');
+        vis_data3 = populations(1).Wext;
+        acth6 = pcolor(vis_data1); 
+        box off; grid off; axis xy; 
+        xlabel('layer 1 - neuron index'); ylabel('layer 2 - neuron index');
         subplot(3,2,6);
-        vis_data4 = populations(2).Wext(1:N_NEURONS, 1:N_NEURONS)';
-        acth7 = pcolor(vis_data2); %colorbar;
-        box off; grid off; axis xy; xlabel('layer 2 - neuron index'); ylabel('layer 2 - neuron index');
+        vis_data4 = populations(2).Wext;
+        acth7 = pcolor(vis_data2); 
+        box off; grid off; axis xy; 
+        xlabel('layer 2 - neuron index'); ylabel('layer 1 - neuron index');
         
        
         % refresh visualization
@@ -139,21 +151,22 @@ for t = 1:10
         % neural units update dynamics (activity)
         populations(1).a = compute_s(populations(1).h + ...
             populations(1).Wint*populations(1).a + ...
-            populations(1).Wext*populations(1).a, M, S);
+            populations(1).Wext*populations(2).a, M, S);
         populations(2).a = compute_s(populations(2).h + ...
             populations(2).Wint*populations(2).a + ...
-            populations(2).Wext*populations(2).a, M, S);
+            populations(2).Wext*populations(1).a, M, S);
         
         % compute the change in units activity in each population
         delta_a(1, :) = populations(1).a;
         delta_a(2, :) = populations(2).a;
         
         % check if network has settled
-        if(sum((old_delta_a(1, :) - delta_a(1,:)).^2)<=EPSILON && ...
-           sum((old_delta_a(2, :) - delta_a(2,:)).^2)<=EPSILON)
-            fprintf('network has settled in %d iterations\n', tau);
-            tau = 0;
-            break;
+        if(sum((old_delta_a(1, :) - delta_a(1,:)).^2)<=EPSILON)
+           if(sum((old_delta_a(2, :) - delta_a(2,:)).^2)<=EPSILON)
+                fprintf('network has settled in %d iterations\n', tau);
+                tau = 0;
+                break;
+            end
         end
         % update history
         tau = tau + 1;
@@ -184,10 +197,10 @@ end % end simulation for each sample in the input dataset
 % weights after learning
 figure; set(gcf, 'color', 'white');
 subplot(1,2,1);
-pcolor(populations(1).Wext'); colorbar;
+pcolor(populations(1).Wext);
 box off; grid off; axis xy; xlabel('input layer'); ylabel('projection layer');
 subplot(1,2,2);
-pcolor(populations(2).Wext'); colorbar;
+pcolor(populations(2).Wext); 
 box off; grid off; axis xy; xlabel('projection layer'); ylabel('input layer');
 
 
