@@ -21,7 +21,7 @@ for j = 1:1:N
     % fj is the lamda value for poisson Neuron j
     fj = C * (K*exp(temp / sig^2) + v); 
     %R(j) = poissrnd(fj);
-    R(j) = fj;
+    R(j) = fj + rand;
 end
 
     
