@@ -15,7 +15,7 @@ N_NEURONS = 40;
 % max range value @ init for weights and activities in the population
 MAX_INIT_RANGE = 0.1 ;
 % WTA circuit settling threshold
-EPSILON = 1e-8;
+EPSILON = 1e-12;
 % type of input data real (sensory data) or generated
 REAL_DATA = 0;
 % the type of activity update - one shot (as given in the paper) or
@@ -40,7 +40,7 @@ ALPHA_D = 0.5; % weight decay factor ALPHA_D > ALPHA_L
 
 % constants for HAR
 C = 1; % scaling factor in homeostatic activity regulation
-A_TARGET = 1.0/N_NEURONS; % target activity for HAR
+A_TARGET = 1.0; % target activity for HAR
 OMEGA = 0.5;  % inverse time constant of averaging
 
 % constants for neural units in populations
