@@ -9,27 +9,27 @@ clear all; clc; close all;
 % enables dynamic visualization on network runtime
 DYN_VISUAL = 1;
 % verbose in standard output
-VERBOSE = 1;
+VERBOSE = 0;
 % number of populations in the network
 N_POP = 3;
 % number of neurons in each population
-N_NEURONS = 50;
+N_NEURONS = 100;
 % max range value @ init for weights and activities in the population
 MAX_INIT_RANGE = 1;
 % WTA circuit settling threshold
-EPSILON = 1e-4;
+EPSILON = 1e-3;
 % clamp the input to a unit given by CLAMP id
 CLAMP =1;
 % numbers of epochs to go through each values (add a smarter criteria here)
-MAX_EPOCHS = 2000;
+MAX_EPOCHS = 5000;
 
 %% INIT INPUT DATA
 sensory_data = load('artificial_data_set.mat');
 DATASET_LEN = length(sensory_data.x);
 % epoch iterator (iterator through the input dataset)
-t = 1;
+t = 0;
 % network iterator (iterator for a given input value in the WTA loop)
-tau = 1;
+tau = 0;
 
 %% INIT NETWORK DYNAMICS
 % constants for WTA circuit (convolution based WTA)
@@ -79,7 +79,7 @@ for didx =1:DATASET_LEN
         
         % pick a new sample from the dataset and feed it to the input
         % population in the network (in this case in->A->B->C->A)
-        populations(CLAMP).a = population_encoder(sensory_data.x(didx), max(sensory_data.x(:)),  N_NEURONS);
+        populations(CLAMP).a = population_encoder(sensory_data.x(didx), N_NEURONS);
         
         % given the input sample wait for WTA circuit to settle
         while(1)
@@ -116,12 +116,6 @@ for didx =1:DATASET_LEN
             % update WTA loop time step
             tau = tau + 1;
             
-            % visualize runtime data for each input sample
-            if(DYN_VISUAL==1)
-                visualize_runtime(populations, tau, t);
-            end
-            
-            
         end  % WTA convergence loop
         
         % update Hebbian linkage between the populations
@@ -151,23 +145,18 @@ for didx =1:DATASET_LEN
         
         % update HAR averging history
         old_avg = cur_avg;
-        
-        % check net end condition / criteria given the current input sample
-        if(t == MAX_EPOCHS)
-            if VERBOSE==1
-                fprintf('Sharp learning training epochs %d\n', t);
-            end
-            t = 0;
+               
+        % check net end condition / criteria given the current input
+        if(t == MAX_EPOCHS) 
+        if VERBOSE==1
+            fprintf('Sharp learning training epochs %d\n', t);
+        end 
+        t = 0;
         end
-        
-        % increment network time
-        t = t + 1;
-        
     end % end main relaxation loop for WTA, HL and HAR
     
+    % visualize runtime data
+    if(DYN_VISUAL==1)
+        visualize_runtime(populations, tau, t);
+    end
 end % end loop through all dataset items
-
-% visualize runtime data and end of simulation for entire dataset
-if(DYN_VISUAL==1)
-    visualize_runtime(populations, tau, t);
-end

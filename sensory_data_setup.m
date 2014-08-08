@@ -1,3 +1,6 @@
+% function to read and pre-process the robot sensory data for real-world
+% data simulation of the sharpening network
+% data from gyro, compass, odometry and camera
 function data = sensory_data_setup(embedded, external)
 format long g;
 
