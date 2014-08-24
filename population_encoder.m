@@ -4,7 +4,7 @@
 % distribution
 function R = population_encoder(x, range, N)
 sig = 10.0; % standard deviation 
-K = 1; % max firing rate (Hz) (ignore - not modeling nurophysiology here :)
+K = 0.1; % max firing rate (Hz) (ignore - not modeling nurophysiology here :)
 % pattern of activity, or output tuning curve between [-range, range]
 R = zeros(N, 1);
 % calculate output 
