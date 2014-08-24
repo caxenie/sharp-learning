@@ -3,32 +3,32 @@ function visualize_runtime(input_data, populations)
 set(gcf, 'color', 'w');
 % population encoded inputs in each population of the network
 subplot(3, 3, 1);
-acth03 = plot(input_data.X, '-.r', 'LineWidth', 2); box off;
+acth03 = plot(input_data.X, '.r', 'LineWidth', 2); box off;
 xlabel('neuron index'); ylabel('population coded input in layer 1');
-box off;axis([0,  populations(1).lsize, 0, max(input_data.X)]);
+box off;%axis([0,  populations(1).lsize, 0, max(input_data.X)]);
 subplot(3, 3, 2);
-acth04 = plot(input_data.Y, '-.b', 'LineWidth', 2); box off;
+acth04 = plot(input_data.Y, '.b', 'LineWidth', 2); box off;
 xlabel('neuron index'); ylabel('popultion coded input in layer 2');
-box off;axis([0,  populations(2).lsize, 0, max(input_data.Y)]);
+box off;%axis([0,  populations(2).lsize, 0, max(input_data.X)]);
 subplot(3, 3, 3);
-acth05 = plot(input_data.Z, '-.g', 'LineWidth', 2); box off;
+acth05 = plot(input_data.Z, '.g', 'LineWidth', 2); box off;
 xlabel('neuron index'); ylabel('population coded input in layer 3');
-box off;axis([0,  populations(3).lsize, 0, max(input_data.Z)]);
+box off;%axis([0,  populations(3).lsize, 0, max(input_data.X)]);
 
 % activities for each population (both overall activity and homeostasis)
 max_act = max([max(populations(1).a), max(populations(2).a), max(populations(3).a)]);
 subplot(3, 3, 4);
 acth3 = plot(populations(1).a, '-r', 'LineWidth', 2); box off;
 xlabel('neuron index'); ylabel('activation in layer 1');
-box off;axis([0,  populations(1).lsize, 0, max_act]);
+box off;%axis([0,  populations(1).lsize, 0, max_act]);
 subplot(3, 3, 5);
 acth4 = plot(populations(2).a, '-b', 'LineWidth', 2); box off;
 xlabel('neuron index'); ylabel('activation in layer 2');
-box off;axis([0,  populations(2).lsize, 0, max_act]);
+box off;%axis([0,  populations(2).lsize, 0, max_act]);
 subplot(3, 3, 6);
 acth5 = plot(populations(3).a, '-g', 'LineWidth', 2); box off;
 xlabel('neuron index'); ylabel('activation in layer 3');
-box off;axis([0,  populations(3).lsize, 0, max_act]);
+box off;%axis([0,  populations(3).lsize, 0, max_act]);
 
 % hebbian links between populations
 hpc1 = subplot(3 ,3,7);

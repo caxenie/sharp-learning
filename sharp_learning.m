@@ -28,15 +28,16 @@ SIGMA   = 5.0;                      % standard deviation in the exponential upda
 SL      = 4.5;                      % scaling factor of neighborhood kernel
 GAMMA   = SL/(SIGMA*sqrt(2*pi));    % convolution scaling factor
 % constants for Hebbian linkage
-ALPHA_L = 0.05*1e-2;                 % Hebbian learning rate
+ALPHA_L = 0.5*1e-2;                 % Hebbian learning rate
 ALPHA_D = 1.0*1e-2;                 % Hebbian decay factor ALPHA_D >> ALPHA_L
 % constants for HAR
-C       = 0.0025;                    % scaling factor in homeostatic activity regulation
+C       = 0.005;                    % scaling factor in homeostatic activity regulation
 TARGET_VAL_ACT  = 0.4;              % amplitude target for HAR
 A_TARGET        = TARGET_VAL_ACT*ones(N_NEURONS, 1); % HAR target activity vector
 % constants for neural units in neural populations
 M       = 1; % slope in logistic function @ neuron level
-S       = 5.0; % shift in logistic function @ neuron level
+S       = 5.5; % shift in logistic function @ neuron level
+ETA     = 0.05;
 %% CREATE NETWORK AND INITIALIZE
 % create a network given the simulation constants
 populations = create_init_network(N_POP, N_NEURONS, GAMMA, SIGMA, DELTA, MAX_INIT_RANGE, TARGET_VAL_ACT);
@@ -49,20 +50,20 @@ cur_avg = zeros(N_POP, N_NEURONS);
 % the new rate values
 delta_a1 = zeros(N_NEURONS, 1);
 delta_a2 = zeros(N_NEURONS, 1);
-delta_a3 = zeros(N_NEURONS, 1);
+delta_a3 = zeros(N_NEURONS, 1); 
 %% NETWORK SIMULATION LOOP
 % % present each entry in the dataset for MAX_EPOCHS epochs to train the net
 while(1)
     %% INPUT DATA
     % pick a new sample from the dataset and feed it to the input (noiseless input)
     % population in the network (in this case X -> A -> B -> C -> A)
-    input_data.X = population_encoder(randi(200, 1, 1), N_NEURONS, N_NEURONS);
+    input_data.X = population_encoder(t, N_NEURONS, N_NEURONS);
     % normalize input such that the activity in all units sums to 1.0
-    input_data.X = input_data.X./sum(input_data.X);
+    %input_data.X = input_data.X./sum(input_data.X);
     % reinit the other populations with random activity in [0,1] and
-    % normalize accross all units in the population 
-    input_data.Y = rand(N_NEURONS, 1)*MAX_INIT_RANGE; input_data.Y  = input_data.Y ./ sum(input_data.Y );
-    input_data.Z = rand(N_NEURONS, 1)*MAX_INIT_RANGE; input_data.Z = input_data.Z ./ sum(input_data.Z );
+    % normalize accross all units in the population
+    input_data.Y = rand(N_NEURONS, 1)*MAX_INIT_RANGE; 
+    input_data.Z = rand(N_NEURONS, 1)*MAX_INIT_RANGE; 
     % clamp input to neural population
     populations(1).a = input_data.X;
     populations(2).a = input_data.Y;
@@ -123,9 +124,9 @@ while(1)
             delta_a3(idx) = compute_s(populations(3).h(idx) + ext_contrib + int_contrib, M, S);
         end
         % update the activities of each population
-        populations(1).a = delta_a1;
-        populations(2).a = delta_a2;
-        populations(3).a = delta_a3;
+        populations(1).a = (1-ETA)*populations(1).a + ETA*delta_a1;
+        populations(2).a = (1-ETA)*populations(2).a + ETA*delta_a2;
+        populations(3).a = (1-ETA)*populations(3).a + ETA*delta_a3;
         % current activation values holder
         for pop_idx = 1:N_POP
             act(:, pop_idx) = populations(pop_idx).a;
@@ -142,7 +143,7 @@ while(1)
         % update history of activities
         old_act = act;
         % increment time step in WTA loop
-        tau = tau + 1;        
+        tau = tau + 1;
     end  % WTA convergence loop
     % update Hebbian linkage between the populations (decaying Hebbian rule)
     for idx = 1:N_NEURONS
@@ -179,8 +180,8 @@ while(1)
     if(t==N_NEURONS)
         t = 1;
     end
-            % visualize runtime data
-        if(DYN_VISUAL==1)
-            visualize_runtime(input_data, populations);
-        end
+    % visualize runtime data
+    if(DYN_VISUAL==1)
+        visualize_runtime(input_data, populations);
+    end
 end
