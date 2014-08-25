@@ -34,24 +34,24 @@ box off;%axis([0,  populations(3).lsize, 0, max_act]);
 hpc1 = subplot(3 ,3,7);
 ax1=get(hpc1,'position'); % Save the position as ax
 set(hpc1,'position',ax1); % Manually setting this holds the position with colorbar
-vis_data4 = populations(2).Wext;
-acth7 = imagesc(vis_data4); caxis([0, max(populations(2).Wext(:))]); colorbar;
+vis_data4 = populations(1).Wext;
+acth7 = imagesc(vis_data4); caxis([0, max(populations(1).Wext(:))]); colorbar;
 box off; grid off; set(gca,'XAxisLocation','top');
-xlabel('layer 1 - neuron index'); ylabel('layer 2 - neuron index');
+xlabel('layer 2 - neuron index'); ylabel('layer 1 - neuron index');
 hpc2 = subplot(3, 3, 8);
 ax2=get(hpc2,'position'); % Save the position as ax
 set(hpc2,'position',ax2); % Manually setting this holds the position with colorbar
-vis_data5 = populations(3).Wext;
-acth8 = imagesc(vis_data5);caxis([0, max(populations(3).Wext(:))]); colorbar;
+vis_data5 = populations(2).Wext;
+acth8 = imagesc(vis_data5);caxis([0, max(populations(2).Wext(:))]); colorbar;
 box off; grid off; set(gca,'XAxisLocation','top');
-xlabel('layer 2 - neuron index'); ylabel('layer 3 - neuron index');
+xlabel('layer 3 - neuron index'); ylabel('layer 2 - neuron index');
 hpc3 = subplot(3, 3, 9);
 ax3=get(hpc3,'position'); % Save the position as ax
 set(hpc3,'position',ax3); % Manually setting this holds the position with colorbar
-vis_data3 = populations(1).Wext;
-acth6= imagesc(vis_data3);caxis([0, max(populations(1).Wext(:))]); colorbar;
+vis_data3 = populations(3).Wext;
+acth6= imagesc(vis_data3);caxis([0, max(populations(3).Wext(:))]); colorbar;
 box off; grid off; set(gca,'XAxisLocation','top');
-xlabel('layer 3 - neuron index'); ylabel('layer 1 - neuron index');
+xlabel('layer 1 - neuron index'); ylabel('layer 3 - neuron index');
 
 % refresh visualization
 set(acth03, 'YData', input_data.X);
